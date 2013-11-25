@@ -4,26 +4,15 @@ using System.Linq;
 
 namespace ConwayLifeLINQ
 {
-    public class Game
+    public static class GameLogic
     {
-        
-        private HashSet<Tuple<int, int>> field;
-        public Game()
+        public static void RunGame(HashSet<Tuple<int, int>> field)
         {
-            field=new HashSet<Tuple<int, int>>();
-        }
-        
-        public bool GetCell(int x, int y)
-        {
-            return field.Any(tuple => tuple.Item1 == x && tuple.Item2 == y);
+                ShowFieldLINQ(field);
+                RunGame( DoIteration(field));
         }
 
-        public void SetCell(int x, int y)
-        {
-            field.Add(new Tuple<int, int>(x, y));
-        }
-        
-        public void ShowFieldLINQ()
+        private static void ShowFieldLINQ(IEnumerable<Tuple<int, int>> field)
         {
             Console.Clear();
             field.Select(cell =>
@@ -32,14 +21,15 @@ namespace ConwayLifeLINQ
                 Console.Write('*');
                 return true;
             }).ToArray();
+            Console.ReadKey();
         }
 
-        public void DoIteration()
+        public static HashSet<Tuple<int, int>> DoIteration(HashSet<Tuple<int, int>> field)
         {
-            field=new HashSet<Tuple<int, int>>(field.SelectMany(cell=>GetCellNeighb(cell.Item1,cell.Item2)).Where(cell=>CountAliveNeighb(cell.Item1,cell.Item2)==3 || (CountAliveNeighb(cell.Item1,cell.Item2)==2 && field.Contains(cell))));
+            return new HashSet<Tuple<int, int>>(field.SelectMany(cell => GetCellNeighb(cell.Item1, cell.Item2)).Where(cell => CountAliveNeighb(field, cell.Item1, cell.Item2) == 3 || (CountAliveNeighb(field,cell.Item1, cell.Item2) == 2 && field.Contains(cell))));
         }
 
-        public List<Tuple<int, int>> GetCellNeighb(int x,int y)
+        public static IEnumerable<Tuple<int, int>> GetCellNeighb(int x,int y)
         {
             return Enumerable.Range(x - 1, 3)
                 .SelectMany
@@ -49,7 +39,7 @@ namespace ConwayLifeLINQ
             .Where(tuple => !CellsEquals(new Tuple<int, int>(x, y), tuple)).ToList();
         }
 
-        public int CountAliveNeighb(int x, int y)
+        public static int CountAliveNeighb(IEnumerable<Tuple<int, int>> field,int x, int y)
         {
             return field.Count(tuple => Math.Abs(tuple.Item1 - x) <= 1 && Math.Abs(tuple.Item2 - y) <= 1 && !CellsEquals(new Tuple<int, int>(x,y), tuple));
         }
